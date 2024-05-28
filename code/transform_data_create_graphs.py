@@ -165,6 +165,81 @@ def read_from_csv(file_path):
     return new_list_after_deletion, mean_list
 
 
+def read_from_csv_for_scatter_plot(file_path):
+    list_ = []
+    print(file_path)
+    with open(file_path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=';')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                line_count += 1
+            else:
+                list_.append(row)
+                line_count += 1
+        print(f'Processed {line_count} lines.')
+
+    filtered_list_of_lists = [[item for item in sublist if item != ''] for sublist in list_]
+    new_list_after_deletion = []
+    distList = []
+    for rows in filtered_list_of_lists:
+        current_distance = rows[0]
+        temp_list = []
+        for value in rows:
+            if value != current_distance:
+                new_value = float(value)
+                dist = float(current_distance)
+                if new_value >10:
+                    new_list_after_deletion.append(new_value)
+                    temp_list.append(new_value)
+                    distList.append(dist)
+    return new_list_after_deletion, distList
+
+
+def read_from_csv_for_rtt(file_path):
+    list_ = []
+    print(file_path)
+    with open(file_path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=';')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                line_count += 1
+            else:
+                list_.append(row)
+                line_count += 1
+        print(f'Processed {line_count} lines.')
+
+    filtered_list_of_lists = [[item for item in sublist if item != ''] for sublist in list_]
+    new_list_after_deletion = []
+    for rows in filtered_list_of_lists:
+        current_distance = rows[0]
+        temp_list = []
+        for value in rows:
+            if value != current_distance:
+                new_value = float(value)*2/0.03
+                new_list_after_deletion.append(new_value)
+                temp_list.append(new_value)
+    return new_list_after_deletion
+
+
+def print_scatter_plot(true_distance, ftm_distance, param_name, color_, true_distance2, ftm_distance2, param_name2, color2_, plot_number):
+    # Create the plot
+    plt.figure(plot_number)
+    plt.scatter(true_distance, ftm_distance, facecolors='none', edgecolors=color_, label=param_name, marker='o', s=100)
+    plt.scatter(true_distance2, ftm_distance2, facecolors='none', edgecolors=color2_, label=param_name2, marker='o', s=100)
+    plt.plot([0, 500], [0, 500], color='black', linewidth=2)  # Line y=x
+    plt.xticks(np.arange(0, 550, 50))
+    plt.yticks(np.arange(0, 700, 50))
+
+    # Add labels and title
+    plt.title("Wykres zmierzonej odległości w stosunku do rzeczywistej odległości")
+    plt.xlabel('Rzeczywista odległość [cm]')
+    plt.ylabel('Zmierzona odległość [cm]')
+    plt.legend()
+    plt.grid(True)
+
+
 def print_hist_with_dist(numbers, param_name, plot_number, plot_color):
     plt.figure(plot_number)
     plt.hist(numbers, bins=10, density=True, color=plot_color, alpha=0.5)
@@ -231,6 +306,7 @@ def print_hist_with_double_dist(numbers, param_name, plot_number, plot_color):
     plt.xlim(-300, 200)
     # Plot histogram with KDE using seaborn
     sns.histplot(numbers, stat='probability', bins=15, kde=True, color=plot_color, alpha=0.5)
+
     # plt.hist(numbers, bins=20, color='blue', alpha=0.5, edgecolor='black')
     plt.title('Histogram z krzywą rozkładu dwumodalnego dla {}'.format(param_name))
     plt.xlabel('Błąd [cm]')
@@ -238,6 +314,23 @@ def print_hist_with_double_dist(numbers, param_name, plot_number, plot_color):
 
     calculate_params_for_double_dist(numbers)
     plt.show()
+
+
+def print_hist_with_double_dist_rtt(numbers, plot_number, plot_color):
+    plt.figure(plot_number)
+    #plt.xlim(-300, 200)
+    # Plot histogram with KDE using seaborn
+    sns.histplot(numbers, stat='density', bins=10, kde=True, color=plot_color, alpha=0.5)
+    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x * 1e5:.0f}e-5'))
+
+    # plt.hist(numbers, bins=20, color='blue', alpha=0.5, edgecolor='black')
+    plt.title('Histogram z krzywą rozkładu dwumodalnego dla pomiaru wewnątrz budynku')
+    plt.xlabel(r'$\Delta$RTT [ps]')
+    plt.ylabel('Gęstość prawdopodobieństwa')
+
+    calculate_params_for_double_dist(numbers)
+    plt.show()
+
 
 
 def print_cdf(data, param_name, name):
@@ -299,6 +392,13 @@ def print_bar_graph(data, title, param_name, is_inside_, plot_number, need_two_b
     plt.xlabel('Odległość [cm]')
     plt.ylabel('Błąd [cm]')
     plt.legend()
+
+
+def mean_spb(spb_in):
+    newspb = []
+    for spb in spb_in[29]:
+        newspb.append(np.abs(spb))
+    print(np.mean(newspb))
 
 
 if __name__ == '__main__':
